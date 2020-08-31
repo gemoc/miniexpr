@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature id="org.gemoc.miniexpr.feature">
+      <category name="org.gemoc.miniexpr.category"/>
+   </feature>
+   <category-def name="org.gemoc.miniexpr.category" label="MiniExpr"/>
+</site>

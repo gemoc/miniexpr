@@ -1,0 +1,54 @@
+grammar org.gemoc.miniexpr.MiniExpr with org.eclipse.xtext.common.Terminals
+
+generate miniExpr "http://www.eclipse.org/gemoc/miniexpr/MiniExpr"
+
+Model:
+	expressions+=Expression*;
+
+Expression:
+	ContractedIf;
+
+ContractedIf returns Expression:
+	Or ({ContractedIf.condition=current} '?' then=Or ':' else=Or)*;
+
+Or returns Expression:
+	And ({Or.left=current} op='||' right=And)*;
+
+And returns Expression:
+	Equality ({And.left=current} op='&&' right=Equality)*;
+
+Equality returns Expression:
+	Comparison ({Equality.left=current} op=('==' | '!=') right=Comparison)*;
+
+Comparison returns Expression:
+	PlusOrMinus ({Comparison.left=current} op=('>=' | '<=' | '>' | '<') right=PlusOrMinus)*;
+
+PlusOrMinus returns Expression:
+	MulOrDiv (({Plus.left=current} op='+' | {Minus.left=current} op='-') right=MulOrDiv)*;
+
+MulOrDiv returns Expression:
+	Modulo (({Mul.left=current} op='*' | {Div.Left=current} op='/') right=Modulo)*;
+
+Modulo returns Expression:
+	Primary ({Modulo.left=current} op='%' right=Primary)*;
+
+Primary returns Expression:
+	{Parenthesis} '(' expression=Expression ')' | {UnaryMinus} '-' expression=Primary | {Not} '!' expression=Primary |
+	Atomic;
+
+Atomic returns Expression:
+	{NumberConstant} value=NUMBER | {BoolConstant} (value?='true' | 'false') |
+	{VectorConstant} '[' values+=Expression (',' values+=Expression)* ']' | Ref | ArraySize;
+
+Ref:
+	SimpleVarRef ({ArrayRef.array=current} '[' indices+=Expression (',' indices+=Expression)* ']' |
+	{PropertyRef.object=current} '.' property=ID)*;
+
+SimpleVarRef:
+	target=ID;
+
+ArraySize:
+	'|' array=Ref '|';
+
+terminal NUMBER:
+	INT ('.' INT?)?;
